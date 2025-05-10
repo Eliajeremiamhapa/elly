@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Timetable Notifier</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: #f0f8ff;
+      color: #333;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    .btn {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .message {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 0.5rem;
+      }
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Smart Timetable Notification System</h1>
+  <p>Click below to allow daily class reminders at 8:00 PM.</p>
+  <button class="btn" onclick="requestPermission()">Allow Notification</button>
+
+  <div class="message" id="msg"></div>
+
+  <script>
+    function requestPermission() {
+      if (Notification && Notification.permission !== 'granted') {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            scheduleDailyReminder();
+            document.getElementById('msg').innerText = "Reminder scheduled! You will be notified daily at 8:00 PM.";
+          } else {
+            document.getElementById('msg').innerText = "Permission denied. Cannot send daily reminder.";
+          }
+        });
+      } else if (Notification.permission === 'granted') {
+        scheduleDailyReminder();
+        document.getElementById('msg').innerText = "Reminder already allowed. You will be notified daily at 8:00 PM.";
+      }
+    }
+
+    function scheduleDailyReminder() {
+      setInterval(() => {
+        const now = new Date();
+        if (now.getHours() === 20 && now.getMinutes() === 0) {
+          new Notification("📚 Class Reminder!", {
+            body: "Check your timetable and prepare for tomorrow's classes.",
+            icon: "https://img.icons8.com/emoji/48/classroom-emoji.png"
+          });
+        }
+      }, 60000); // check every 60 seconds
+    }
+  </script>
+</body>
+</html>

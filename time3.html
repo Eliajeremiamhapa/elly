@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Timetable Notifier</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: #e9f5ff;
+      color: #333;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .btn {
+      display: block;
+      margin: 1rem auto;
+      padding: 12px 25px;
+      font-size: 1rem;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+    .message {
+      text-align: center;
+      font-size: 1.1rem;
+      margin: 1rem auto;
+      max-width: 600px;
+    }
+    .timetable-container {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      max-width: 1000px;
+      margin: 2rem auto;
+      border-collapse: collapse;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      background-color: white;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #007BFF;
+      color: white;
+      font-size: 0.95rem;
+    }
+    td {
+      font-size: 0.9rem;
+    }
+    tr:nth-child(even) td {
+      background-color: #f9f9f9;
+    }
+    @media screen and (max-width: 768px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead {
+        display: none;
+      }
+      td {
+        position: relative;
+        padding-left: 50%;
+        text-align: left;
+        border: none;
+        border-bottom: 1px solid #ccc;
+      }
+      td::before {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: bold;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Smart Timetable Notification System</h1>
+  <p style="text-align:center">Click below to allow daily class reminders starting from today.</p>
+  <button class="btn" onclick="requestPermission()">Allow Notification</button>
+  <div class="message" id="msg"></div>
+
+  <div class="timetable-container">
+    <h2>Weekly Class Timetable</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Monday</th>
+          <th>Tuesday</th>
+          <th>Wednesday</th>
+          <th>Thursday</th>
+          <th>Friday</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>07:30 - 08:15</td><td>CS 8213 | CCL 01</td><td></td><td>CS 8212 | 104-C</td><td>CS 8210 | LGR 02</td><td></td></tr>
+        <tr><td>08:15 - 09:00</td><td>CS 8213 | CCL 01</td><td></td><td>CS 8212 | 104-C</td><td>CS 8210 | LGR 02</td><td></td></tr>
+        <tr><td>09:00 - 09:45</td><td>CS 8213 | CCL 01</td><td></td><td>CS 8212 | 104-C</td><td>CS 8210 | LGR 02</td><td></td></tr>
+        <tr><td colspan="6">BREAK TIME</td></tr>
+        <tr><td>09:55 - 10:40</td><td></td><td>CS 8214 | 104-C</td><td></td><td>DS 8101 | 104-C</td><td>CS 8211 | THESES</td></tr>
+        <tr><td>10:40 - 11:25</td><td></td><td>CS 8214 | 104-C</td><td></td><td>DS 8101 | 104-C</td><td>CS 8211 | THESES</td></tr>
+        <tr><td>11:25 - 12:10</td><td></td><td>CS 8214 | 104-C</td><td></td><td>DS 8101 | 104-C</td><td>CS 8211 | THESES</td></tr>
+        <tr><td colspan="6">BREAK TIME</td></tr>
+        <tr><td>12:20 - 13:05</td><td>CS 8210 | CCL 02</td><td>CS 8209 | D 106</td><td>CS 8213 | D 005</td><td>CS 8211 | D006</td><td></td></tr>
+        <tr><td>13:05 - 13:50</td><td>CS 8210 | CCL 02</td><td>CS 8209 | D 106</td><td>CS 8213 | D 005</td><td>CS 8211 | D006</td><td></td></tr>
+        <tr><td>13:50 - 14:35</td><td></td><td>CS 8209 | D 106</td><td></td><td></td><td></td></tr>
+        <tr><td>14:35 - 15:20</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>15:20 - 16:05</td><td></td><td></td><td></td><td></td><td>CS 8208 | 104-C</td></tr>
+        <tr><td>16:05 - 16:50</td><td></td><td></td><td></td><td></td><td>CS 8208 | 104-C</td></tr>
+        <tr><td colspan="6">BREAK TIME</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    let userAllowedTime = null;
+
+    function requestPermission() {
+      if (Notification && Notification.permission !== 'granted') {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            userAllowedTime = new Date();
+            scheduleReminder();
+            document.getElementById('msg').innerText = `✅ Notifications allowed. You will receive daily reminders from now at ${userAllowedTime.toLocaleTimeString()}.`;
+          } else {
+            document.getElementById('msg').innerText = "❌ Notification permission denied.";
+          }
+        });
+      } else if (Notification.permission === 'granted') {
+        userAllowedTime = new Date();
+        scheduleReminder();
+        document.getElementById('msg').innerText = `✅ Notifications already enabled. Daily reminders will start now at ${userAllowedTime.toLocaleTimeString()}.`;
+      }
+    }
+
+    function scheduleReminder() {
+      const reminderTime = userAllowedTime || new Date();
+      const reminderHour = reminderTime.getHours();
+      const reminderMinute = reminderTime.getMinutes();
+
+      setInterval(() => {
+        const now = new Date();
+        if (now.getHours() === reminderHour && now.getMinutes() === reminderMinute) {
+          new Notification("📚 Daily Class Reminder", {
+            body: "Check your schedule and get ready for tomorrow's classes!",
+            icon: "https://img.icons8.com/emoji/48/classroom-emoji.png"
+          });
+        }
+      }, 60000);
+    }
+  </script>
+</body>
+</html>

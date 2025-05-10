@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Timetable Notifier </title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: #f0f8ff;
+      color: #333;
+    }
+    h1, h2 { text-align: center; }
+    .btn {
+      display: block;
+      margin: 1rem auto;
+      padding: 12px 25px;
+      font-size: 1rem;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn:hover { background-color: #0056b3; }
+    .message { text-align: center; font-size: 1.1rem; margin: 1rem auto; max-width: 600px; }
+    .timetable-container { overflow-x: auto; padding: 0 1rem; }
+    .summary {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+    table {
+      width: 100%; max-width: 1000px; margin: 2rem auto; border-collapse: collapse;
+      border-radius: 10px; overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      background-color: white;
+    }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+    th {
+      background-color: #007BFF; color: white; font-size: 0.95rem;
+    }
+    td { font-size: 0.9rem; }
+    tr:nth-child(even) td { background-color: #f9f9f9; }
+    @media screen and (max-width: 768px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead { display: none; }
+      td {
+        position: relative;
+        padding-left: 50%;
+        text-align: left;
+        border: none;
+        border-bottom: 1px solid #ccc;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+      }
+      td::before {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: bold;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Smart Timetable Notification System Design by Elia Baltazary:0692416596</h1>
+  <p style="text-align:center">Click below to allow daily class reminders starting from today.</p>
+  <button class="btn" onclick="requestPermission()">Allow Notification</button>
+  <p style="text-align:center">
+    <label><input type="checkbox" id="dailyToggle" checked> Enable Daily Notifications</label>
+  </p>
+  <div class="message" id="msg"></div>
+
+  <div class="timetable-container">
+    <div class="summary" id="summary"></div>
+    <h2>Weekly Class Timetable</h2>
+    <table id="timetable">
+      <thead>
+        <tr><th>Time</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>07:30 - 08:15</td><td>CS 8213 | Sanga A | CCL 01</td><td></td><td>CS 8212 | Peter J | 104-C</td><td>CS 8210 | Singano B | LGR 02</td><td></td></tr>
+        <tr><td>08:15 - 09:00</td><td>CS 8213 | Sanga A | CCL 01</td><td></td><td>CS 8212 | Peter J | 104-C</td><td>CS 8210 | Singano B | LGR 02</td><td></td></tr>
+        <tr><td>09:00 - 09:45</td><td>CS 8213 | Sanga A | CCL 01</td><td></td><td>CS 8212 | Peter J | 104-C</td><td>CS 8210 | Singano B | LGR 02</td><td></td></tr>
+        <tr><td colspan="6">BREAK TIME</td></tr>
+        <tr><td>09:55 - 10:40</td><td></td><td>CS 8214 | Mrindoko N | 104-C</td><td></td><td>DS 8101 | Innocent W | 104-C</td><td>CS 8211 | Mwakifuna D | THESES</td></tr>
+        <tr><td>10:40 - 11:25</td><td></td><td>CS 8214 | Mrindoko N | 104-C</td><td></td><td>DS 8101 | Innocent W | 104-C</td><td>CS 8211 | Mwakifuna D | THESES</td></tr>
+        <tr><td>11:25 - 12:10</td><td></td><td>CS 8214 | Mrindoko N | 104-C</td><td></td><td>DS 8101 | Innocent W | 104-C</td><td>CS 8211 | Mwakifuna D | THESES</td></tr>
+        <tr><td colspan="6">BREAK TIME</td></tr>
+        <tr><td>12:20 - 13:05</td><td>CS 8210 | Singano B | CCL 02</td><td>CS 8209 | Araba N | D 106</td><td>CS 8213 | Sanga A | D 005</td><td>CS 8211 | Mwakifuna D | D006</td><td></td></tr>
+        <tr><td>13:05 - 13:50</td><td>CS 8210 | Singano B | CCL 02</td><td>CS 8209 | Araba N | D 106</td><td>CS 8213 | Sanga A | D 005</td><td>CS 8211 | Mwakifuna D | D006</td><td></td></tr>
+        <tr><td>13:50 - 14:35</td><td></td><td>CS 8209 | Araba N | D 106</td><td></td><td></td><td></td></tr>
+        <tr><td>15:20 - 16:05</td><td></td><td></td><td></td><td></td><td>CS 8208 | Juma M | 104-C</td></tr>
+        <tr><td>16:05 - 16:50</td><td></td><td></td><td></td><td></td><td>CS 8208 | Juma M | 104-C</td></tr>
+        <tr><td colspan="6">BREAK TIME</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function getTodaysClasses() {
+      const dayIndex = new Date().getDay();
+      if (dayIndex === 0 || dayIndex === 6) return '🎉 Relax, it’s the weekend! No classes today.';
+
+      const table = document.getElementById('timetable');
+      let classes = [];
+      for (let i = 1; i < table.rows.length; i++) {
+        const row = table.rows[i];
+        if (row.cells.length > dayIndex) {
+          const time = row.cells[0].textContent.trim();
+          const content = row.cells[dayIndex].textContent.trim();
+          if (content && content !== 'BREAK TIME') {
+            classes.push(`Time: ${time}\nClass: ${content}`);
+          }
+        }
+      }
+      return classes.length > 0 ? classes.join('\n\n') : '📭 No classes scheduled today!';
+    }
+
+    function showNotification(message) {
+      if (Notification.permission === 'granted') {
+        new Notification("📚 Today's Class Schedule", {
+          body: message,
+          icon: "https://img.icons8.com/emoji/48/classroom-emoji.png"
+        });
+      } else {
+        alert(message); // fallback
+      }
+    }
+
+    function scheduleDailyNotification() {
+      const savedTime = localStorage.getItem('notifyTime');
+      if (!savedTime) return;
+      const [hour, minute] = savedTime.split(':').map(Number);
+      setInterval(() => {
+        const now = new Date();
+        if (now.getHours() === hour && now.getMinutes() === minute) {
+          const todayMsg = getTodaysClasses();
+          showNotification(todayMsg);
+        }
+      }, 60000);
+    }
+
+    function requestPermission() {
+      const isEnabled = document.getElementById('dailyToggle').checked;
+      if (!isEnabled) {
+        document.getElementById('msg').innerText = "🔕 Notifications are disabled by toggle.";
+        return;
+      }
+
+      if (Notification && Notification.permission !== 'granted') {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            const now = new Date();
+            const h = now.getHours().toString().padStart(2, '0');
+            const m = now.getMinutes().toString().padStart(2, '0');
+            const timeStr = `${h}:${m}`;
+            localStorage.setItem('notifyTime', timeStr);
+            showNotification(getTodaysClasses());
+            document.getElementById('msg').innerText = `✅ Notifications allowed. Daily reminders set at ${timeStr}`;
+          } else {
+            document.getElementById('msg').innerText = "❌ Notification permission denied.";
+          }
+        });
+      } else {
+        const timeStr = new Date().toLocaleTimeString();
+        localStorage.setItem('notifyTime', timeStr);
+        showNotification(getTodaysClasses());
+        document.getElementById('msg').innerText = `✅ Notifications already allowed. Reminder set at ${timeStr}`;
+      }
+    }
+
+    function showSummary() {
+      const today = new Date();
+      const weekday = today.toLocaleDateString('en-US', { weekday: 'long' });
+      const classes = getTodaysClasses();
+      const count = (classes.match(/Time:/g) || []).length;
+      const message = classes.includes('Relax') || classes.includes('No classes')
+        ? classes
+        : `📅 ${weekday}: You have ${count} class${count === 1 ? '' : 'es'} today.`;
+      document.getElementById('summary').innerText = message;
+    }
+
+    window.onload = () => {
+      showSummary();
+      scheduleDailyNotification();
+    };
+  </script>
+</body>
+</html>

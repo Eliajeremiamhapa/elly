@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Timetable Notifier</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: #f0f8ff;
+      color: #333;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    .btn {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .message {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #007BFF;
+      color: white;
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 0.5rem;
+      }
+      .btn {
+        width: 100%;
+      }
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead tr { display: none; }
+      td {
+        position: relative;
+        padding-left: 50%;
+        text-align: left;
+      }
+      td::before {
+        position: absolute;
+        left: 10px;
+        width: 45%;
+        padding-right: 10px;
+        font-weight: bold;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Smart Timetable Notification System</h1>
+  <p>Click below to allow daily class reminders at the time you allow.</p>
+  <button class="btn" onclick="requestPermission()">Allow Notification</button>
+
+  <div class="message" id="msg"></div>
+
+  <h2>Your Weekly Timetable</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Monday</th>
+        <th>Tuesday</th>
+        <th>Wednesday</th>
+        <th>Thursday</th>
+        <th>Friday</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>07:30 - 08:15</td><td>CS 8213 | CCL 01</td><td></td><td>CS 8212 | 104-C</td><td>CS 8210 | LGR 02</td><td></td></tr>
+      <tr><td>08:15 - 09:00</td><td>CS 8213 | CCL 01</td><td></td><td>CS 8212 | 104-C</td><td>CS 8210 | LGR 02</td><td></td></tr>
+      <tr><td>09:00 - 09:45</td><td>CS 8213 | CCL 01</td><td></td><td>CS 8212 | 104-C</td><td>CS 8210 | LGR 02</td><td></td></tr>
+      <tr><td>09:45 - 09:55</td><td colspan="5">BREAK TIME</td></tr>
+      <tr><td>09:55 - 10:40</td><td></td><td>CS 8214 | 104-C</td><td></td><td>DS 8101 | 104-C</td><td>CS 8211 | THESES</td></tr>
+      <tr><td>10:40 - 11:25</td><td></td><td>CS 8214 | 104-C</td><td></td><td>DS 8101 | 104-C</td><td>CS 8211 | THESES</td></tr>
+      <tr><td>11:25 - 12:10</td><td></td><td>CS 8214 | 104-C</td><td></td><td>DS 8101 | 104-C</td><td>CS 8211 | THESES</td></tr>
+      <tr><td>12:10 - 12:20</td><td colspan="5">BREAK TIME</td></tr>
+      <tr><td>12:20 - 13:05</td><td>CS 8210 | CCL 02</td><td>CS 8209 | D 106</td><td>CS 8213 | D 005</td><td>CS 8211 | D006</td><td></td></tr>
+      <tr><td>13:05 - 13:50</td><td>CS 8210 | CCL 02</td><td>CS 8209 | D 106</td><td>CS 8213 | D 005</td><td>CS 8211 | D006</td><td></td></tr>
+      <tr><td>13:50 - 14:35</td><td></td><td>CS 8209 | D 106</td><td></td><td></td><td></td></tr>
+      <tr><td>14:35 - 15:20</td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>15:20 - 16:05</td><td></td><td></td><td></td><td></td><td>CS 8208 | 104-C</td></tr>
+      <tr><td>16:05 - 16:50</td><td></td><td></td><td></td><td></td><td>CS 8208 | 104-C</td></tr>
+      <tr><td>16:50 - 17:35</td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>17:35 - 18:20</td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>18:20 - 19:05</td><td colspan="5">BREAK TIME</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    let userAllowedTime = null;
+
+    function requestPermission() {
+      if (Notification && Notification.permission !== 'granted') {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            userAllowedTime = new Date();
+            scheduleReminder();
+            document.getElementById('msg').innerText = "✅ Notifications allowed. Reminder will start now daily at this time (" + userAllowedTime.toLocaleTimeString() + ").";
+          } else {
+            document.getElementById('msg').innerText = "❌ Permission denied. Cannot send daily reminder.";
+          }
+        });
+      } else if (Notification.permission === 'granted') {
+        userAllowedTime = new Date();
+        scheduleReminder();
+        document.getElementById('msg').innerText = "✅ Already allowed. Reminder will start now daily at this time (" + userAllowedTime.toLocaleTimeString() + ").";
+      }
+    }
+
+    function scheduleReminder() {
+      const reminderTime = userAllowedTime || new Date();
+      setInterval(() => {
+        const now = new Date();
+        if (now.getHours() === reminderTime.getHours() && now.getMinutes() === reminderTime.getMinutes()) {
+          new Notification("📅 Timetable Reminder", {
+            body: "It's time to check your timetable and prepare for your classes.",
+            icon: "https://img.icons8.com/emoji/48/classroom-emoji.png"
+          });
+        }
+      }, 60000); // every minute
+    }
+  </script>
+</body>
+</html>
